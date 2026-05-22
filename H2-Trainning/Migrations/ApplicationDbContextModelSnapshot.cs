@@ -79,6 +79,10 @@ namespace H2_Trainning.Migrations
                     b.Property<bool>("PhoneNumberConfirmed")
                         .HasColumnType("bit");
 
+                    b.Property<string>("PlainPassword")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
                     b.Property<string>("Role")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -122,6 +126,9 @@ namespace H2_Trainning.Migrations
                     b.Property<string>("ClientId")
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
+
+                    b.Property<DateTime?>("LastChecked")
+                        .HasColumnType("datetime2");
 
                     b.Property<int>("ProgramId")
                         .HasColumnType("int");
@@ -517,6 +524,10 @@ namespace H2_Trainning.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
+                    b.Property<string>("RejectionReason")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
                     b.Property<int>("SlotId")
                         .HasColumnType("int");
 
@@ -553,6 +564,10 @@ namespace H2_Trainning.Migrations
 
                     b.Property<DateTime>("LoggedAt")
                         .HasColumnType("datetime2");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
 
                     b.Property<double>("Weight")
                         .HasColumnType("float");

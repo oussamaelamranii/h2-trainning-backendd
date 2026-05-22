@@ -1,4 +1,4 @@
-﻿using H2_Trainning.Enums;
+using H2_Trainning.Enums;
 using System.ComponentModel.DataAnnotations;
 
 namespace H2_Trainning.Models
@@ -15,6 +15,7 @@ namespace H2_Trainning.Models
         public DateTime AssignedDate { get; set; } = DateTime.UtcNow;
         [Required]
         public AssignmentStatus Status { get; set; } = AssignmentStatus.Assigned;
+        public DateTime? LastChecked { get; set; }
 
         public ICollection<ExerciseLog> ExerciseLogs { get; set; } = new List<ExerciseLog>();
     }

@@ -111,7 +111,8 @@ namespace H2_Trainning.Services
             ProgramId = a.ProgramId,
             ProgramTitle = a.Program?.Title ?? "",
             AssignedDate = a.AssignedDate,
-            Status = a.Status.ToString()
+            Status = a.Status.ToString(),
+            LastChecked = a.LastChecked
         };
     }
 }

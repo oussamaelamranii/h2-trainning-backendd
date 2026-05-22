@@ -13,5 +13,6 @@ namespace H2_Trainning.Dtos
         public ProgramDto? CurrentProgram { get; set; }
         public string? AssignmentStatus { get; set; }
         public int? AssignmentId { get; set; }
+        public DateTime? LastChecked { get; set; }
     }
 }

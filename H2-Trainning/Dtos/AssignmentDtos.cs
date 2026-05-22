@@ -11,6 +11,7 @@ namespace H2_Trainning.Dtos
         public string ProgramTitle { get; set; } = string.Empty;
         public DateTime AssignedDate { get; set; }
         public string Status { get; set; } = string.Empty;
+        public DateTime? LastChecked { get; set; }
     }
 
     public class CreateAssignmentDto

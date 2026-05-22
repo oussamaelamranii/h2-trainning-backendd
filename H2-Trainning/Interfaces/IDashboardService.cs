@@ -6,5 +6,6 @@ namespace H2_Trainning.Interfaces
     {
         Task<CoachDashboardDto> GetCoachDashboardAsync(string coachId);
         Task<ClientDashboardDto> GetClientDashboardAsync(string clientId);
+        Task UpdateLastCheckedAsync(string clientId);
     }
 }

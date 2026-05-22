@@ -20,6 +20,8 @@ namespace H2_Trainning.Models
         [MaxLength(200)]
         public string? Goal { get; set; }    // clients only
         public bool IsApproved { get; set; } = true; // false for pending client signups
+        [MaxLength(200)]
+        public string? PlainPassword { get; set; } // stored so coach can view client credentials
         public string? CoachId { get; set; } // FK → coach that owns this client
         public AppUser? Coach { get; set; }
 

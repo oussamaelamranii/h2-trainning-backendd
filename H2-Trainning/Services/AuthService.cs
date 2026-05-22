@@ -34,7 +34,9 @@ namespace H2_Trainning.Services
                 FullName = dto.FullName,
                 Role = role,
                 Goal = dto.Goal,
-                IsApproved = true // Direct registration is always approved
+                IsApproved = true, // Direct registration is always approved
+                PlainPassword = dto.Password,
+                PhoneNumber = dto.PhoneNumber
             };
 
             var result = await _userManager.CreateAsync(user, dto.Password);
@@ -66,7 +68,9 @@ namespace H2_Trainning.Services
                 FullName = dto.FullName,
                 Role = Role.Client,
                 Goal = dto.Goal,
-                IsApproved = false // Pending coach approval
+                IsApproved = false, // Pending coach approval
+                PlainPassword = dto.Password,
+                PhoneNumber = dto.PhoneNumber
             };
 
             var result = await _userManager.CreateAsync(user, dto.Password);
@@ -112,7 +116,9 @@ namespace H2_Trainning.Services
             Email = user.Email!,
             Role = user.Role.ToString(),
             Goal = user.Goal,
-            IsApproved = user.IsApproved
+            IsApproved = user.IsApproved,
+            PlainPassword = user.PlainPassword,
+            PhoneNumber = user.PhoneNumber
         };
     }
 }

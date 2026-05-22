@@ -92,5 +92,19 @@ namespace H2_Trainning.Controllers
             if (!deleted) return NotFound();
             return NoContent();
         }
+
+        [HttpPost("{id}/reset-password")]
+        public async Task<IActionResult> ResetPassword(string id, [FromBody] ResetPasswordDto dto)
+        {
+            try
+            {
+                var result = await _service.ResetClientPasswordAsync(id, GetUserId(), dto.NewPassword);
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
     }
 }

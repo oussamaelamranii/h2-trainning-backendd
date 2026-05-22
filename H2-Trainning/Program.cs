@@ -87,8 +87,9 @@ builder.Services.AddControllers(options =>
         options.JsonSerializerOptions.Converters.Add(new System.Text.Json.Serialization.JsonStringEnumConverter());
     });
 
-// ── OpenAPI / Swagger ──
-builder.Services.AddOpenApi();
+// ── Swagger ──
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
 
 // ── CORS (Updated l-Cloud) ──
 builder.Services.AddCors(options =>
@@ -112,8 +113,14 @@ builder.Services.AddCors(options =>
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
-// Khalli OpenApi khdam hta f production ila bghiti t-testi l-API direct men Railway
-app.MapOpenApi();
+// Swagger UI khdam f ga3 l-environments
+app.UseSwagger();
+app.UseSwaggerUI(options =>
+{
+    options.SwaggerEndpoint("/swagger/v1/swagger.json", "H2 Coaching API v1");
+    options.RoutePrefix = "swagger";
+});
+
 
 app.UseCors("AllowAll"); // Sta3mel l-policy l-jdida
 

@@ -19,6 +19,8 @@ namespace H2_Trainning.Dtos
 
         [MaxLength(200)]
         public string? Goal { get; set; }
+
+        public string? PhoneNumber { get; set; }
     }
 
     // ── Login ──
@@ -45,6 +47,8 @@ namespace H2_Trainning.Dtos
 
         [MaxLength(200)]
         public string? Goal { get; set; }
+
+        public string? PhoneNumber { get; set; }
     }
 
     // ── Auth Response ──

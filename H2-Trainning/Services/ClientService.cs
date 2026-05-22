@@ -10,23 +10,35 @@ namespace H2_Trainning.Services
     {
         private readonly IClientRepository _repo;
         private readonly UserManager<AppUser> _userManager;
+        private readonly ICheckInRepository _checkInRepo;
 
-        public ClientService(IClientRepository repo, UserManager<AppUser> userManager)
+        public ClientService(IClientRepository repo, UserManager<AppUser> userManager, ICheckInRepository checkInRepo)
         {
             _repo = repo;
             _userManager = userManager;
+            _checkInRepo = checkInRepo;
         }
 
         public async Task<List<UserDto>> GetClientsByCoachIdAsync(string coachId)
         {
             var clients = await _repo.GetClientsByCoachIdAsync(coachId);
-            return clients.Select(MapToDto).ToList();
+            var dtos = new List<UserDto>();
+            foreach (var client in clients)
+            {
+                dtos.Add(await MapToDtoWithWeightAsync(client));
+            }
+            return dtos;
         }
 
         public async Task<List<UserDto>> SearchClientsAsync(string coachId, string query)
         {
             var clients = await _repo.SearchClientsAsync(coachId, query);
-            return clients.Select(MapToDto).ToList();
+            var dtos = new List<UserDto>();
+            foreach (var client in clients)
+            {
+                dtos.Add(await MapToDtoWithWeightAsync(client));
+            }
+            return dtos;
         }
 
         public async Task<UserDto> CreateClientAsync(string coachId, CreateClientDto dto)
@@ -43,7 +55,9 @@ namespace H2_Trainning.Services
                 Role = Role.Client,
                 Goal = dto.Goal,
                 CoachId = coachId,
-                IsApproved = true // Coach-created clients are auto-approved
+                IsApproved = true, // Coach-created clients are auto-approved
+                PlainPassword = dto.Password,
+                PhoneNumber = dto.PhoneNumber
             };
 
             var result = await _userManager.CreateAsync(client, dto.Password);
@@ -53,13 +67,13 @@ namespace H2_Trainning.Services
                 throw new Exception($"Failed to create client: {errors}");
             }
 
-            return MapToDto(client);
+            return await MapToDtoWithWeightAsync(client);
         }
 
         public async Task<UserDto?> GetByIdAsync(string id)
         {
             var user = await _repo.GetByIdAsync(id);
-            return user == null ? null : MapToDto(user);
+            return user == null ? null : await MapToDtoWithWeightAsync(user);
         }
 
         public async Task<bool> DeleteClientAsync(string clientId, string coachId)
@@ -70,7 +84,12 @@ namespace H2_Trainning.Services
         public async Task<List<UserDto>> GetPendingClientsAsync()
         {
             var clients = await _repo.GetPendingClientsAsync();
-            return clients.Select(MapToDto).ToList();
+            var dtos = new List<UserDto>();
+            foreach (var client in clients)
+            {
+                dtos.Add(await MapToDtoWithWeightAsync(client));
+            }
+            return dtos;
         }
 
         public async Task<UserDto> ApproveClientAsync(string clientId, string coachId)
@@ -89,7 +108,7 @@ namespace H2_Trainning.Services
                 throw new Exception($"Failed to approve client: {errors}");
             }
 
-            return MapToDto(user);
+            return await MapToDtoWithWeightAsync(user);
         }
 
         public async Task<bool> RejectClientAsync(string clientId)
@@ -97,14 +116,50 @@ namespace H2_Trainning.Services
             return await _repo.DeletePendingAsync(clientId);
         }
 
-        private static UserDto MapToDto(AppUser u) => new()
+        public async Task<UserDto> ResetClientPasswordAsync(string clientId, string coachId, string newPassword)
         {
-            Id = u.Id,
-            FullName = u.FullName,
-            Email = u.Email!,
-            Role = u.Role.ToString(),
-            Goal = u.Goal,
-            IsApproved = u.IsApproved
-        };
+            var user = await _repo.GetByIdAsync(clientId);
+            if (user == null || user.Role != Role.Client)
+                throw new Exception("Client not found.");
+
+            // Verify this client belongs to the coach
+            if (user.CoachId != coachId)
+                throw new Exception("You can only reset passwords for your own clients.");
+
+            // Remove old password and set new one
+            var removeResult = await _userManager.RemovePasswordAsync(user);
+            if (!removeResult.Succeeded)
+                throw new Exception("Failed to remove old password.");
+
+            var addResult = await _userManager.AddPasswordAsync(user, newPassword);
+            if (!addResult.Succeeded)
+            {
+                var errors = string.Join(", ", addResult.Errors.Select(e => e.Description));
+                throw new Exception($"Failed to set new password: {errors}");
+            }
+
+            // Save plain password so coach can view it
+            user.PlainPassword = newPassword;
+            await _userManager.UpdateAsync(user);
+
+            return await MapToDtoWithWeightAsync(user);
+        }
+
+        private async Task<UserDto> MapToDtoWithWeightAsync(AppUser u)
+        {
+            var latestCheckIn = await _checkInRepo.GetLatestByClientIdAsync(u.Id);
+            return new UserDto
+            {
+                Id = u.Id,
+                FullName = u.FullName,
+                Email = u.Email!,
+                Role = u.Role.ToString(),
+                Goal = u.Goal,
+                IsApproved = u.IsApproved,
+                PlainPassword = u.PlainPassword,
+                PhoneNumber = u.PhoneNumber,
+                LastWeight = latestCheckIn?.Weight
+            };
+        }
     }
 }

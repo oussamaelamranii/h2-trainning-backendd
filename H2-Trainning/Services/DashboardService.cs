@@ -37,7 +37,8 @@ namespace H2_Trainning.Services
                     ProgramId = a.ProgramId,
                     ProgramTitle = a.Program?.Title ?? "",
                     AssignedDate = a.AssignedDate,
-                    Status = a.Status.ToString()
+                    Status = a.Status.ToString(),
+                    LastChecked = a.LastChecked
                 }).ToList()
             };
         }
@@ -63,6 +64,7 @@ namespace H2_Trainning.Services
             {
                 AssignmentId = latest.Id,
                 AssignmentStatus = latest.Status.ToString(),
+                LastChecked = latest.LastChecked,
                 CurrentProgram = program == null ? null : new ProgramDto
                 {
                     Id = program.Id,
@@ -107,6 +109,16 @@ namespace H2_Trainning.Services
                     }).ToList() ?? new()
                 }
             };
+        }
+
+        public async Task UpdateLastCheckedAsync(string clientId)
+        {
+            var latest = await _assignmentRepo.GetLatestByClientIdAsync(clientId);
+            if (latest != null)
+            {
+                latest.LastChecked = DateTime.UtcNow;
+                await _assignmentRepo.UpdateAsync(latest);
+            }
         }
     }
 }

@@ -31,7 +31,9 @@ namespace H2_Trainning.Controllers
         [Authorize(Roles = "Client")]
         public async Task<IActionResult> GetClientDashboard()
         {
-            var dashboard = await _service.GetClientDashboardAsync(GetUserId());
+            var userId = GetUserId();
+            await _service.UpdateLastCheckedAsync(userId);
+            var dashboard = await _service.GetClientDashboardAsync(userId);
             return Ok(dashboard);
         }
 
