@@ -88,37 +88,121 @@ namespace H2_Trainning.Services
             existing.NutritionalBases = dto.NutritionalBases;
             existing.UpdatedAt = DateTime.UtcNow;
 
-            // Simple update: Clear all days and re-add them 
-            // In a production scenario, we'd do a more granular merge, but for this simpler structure:
-            existing.Days.Clear();
-            foreach (var d in dto.Days)
+            // Granular update to preserve existing Day and Exercise IDs,
+            // preventing SQL foreign key constraint violations and keeping client logs intact.
+            var existingDays = existing.Days.OrderBy(d => d.DayNumber).ToList();
+            var incomingDays = dto.Days.OrderBy(d => d.DayNumber).ToList();
+
+            // 1. Remove days that are no longer in the updated list
+            for (int i = incomingDays.Count; i < existingDays.Count; i++)
             {
-                existing.Days.Add(new ProgramDay
+                existing.Days.Remove(existingDays[i]);
+            }
+
+            // 2. Add or update days
+            for (int i = 0; i < incomingDays.Count; i++)
+            {
+                var incomingDay = incomingDays[i];
+                ProgramDay dayToUpdate;
+
+                if (i < existingDays.Count)
                 {
-                    Name = d.Name,
-                    DayNumber = d.DayNumber,
-                    IsRestDay = d.IsRestDay,
-                    ProgramId = id,
-                    Exercises = d.Exercises.Select((e, i) => new Exercise
+                    dayToUpdate = existingDays[i];
+                    dayToUpdate.Name = incomingDay.Name;
+                    dayToUpdate.IsRestDay = incomingDay.IsRestDay;
+                    dayToUpdate.DayNumber = incomingDay.DayNumber;
+                }
+                else
+                {
+                    dayToUpdate = new ProgramDay
                     {
-                        Name = e.Name,
-                        Sets = e.Sets,
-                        Reps = e.Reps,
-                        Notes = e.Notes,
-                        MediaUrl = e.MediaUrl,
-                        MediaType = ParseMediaType(e.MediaType),
-                        SortOrder = e.SortOrder > 0 ? e.SortOrder : i
-                    }).ToList(),
-                    Meals = d.Meals.Select((m, i) => new Meal
+                        Name = incomingDay.Name,
+                        DayNumber = incomingDay.DayNumber,
+                        IsRestDay = incomingDay.IsRestDay,
+                        ProgramId = id,
+                        Exercises = new List<Exercise>(),
+                        Meals = new List<Meal>()
+                    };
+                    existing.Days.Add(dayToUpdate);
+                }
+
+                // 3. Update exercises for this day
+                var existingExs = dayToUpdate.Exercises.OrderBy(e => e.SortOrder).ToList();
+                var incomingExs = incomingDay.Exercises.OrderBy(e => e.SortOrder).ToList();
+
+                // Delete old exercises
+                for (int j = incomingExs.Count; j < existingExs.Count; j++)
+                {
+                    dayToUpdate.Exercises.Remove(existingExs[j]);
+                }
+
+                // Add or update exercises
+                for (int j = 0; j < incomingExs.Count; j++)
+                {
+                    var incomingEx = incomingExs[j];
+                    if (j < existingExs.Count)
                     {
-                        Name = m.Name,
-                        Macros = m.Macros,
-                        Time = m.Time,
-                        PhotoUrl = m.PhotoUrl,
-                        Ingredients = m.Ingredients,
-                        SortOrder = m.SortOrder > 0 ? m.SortOrder : i
-                    }).ToList()
-                });
+                        var exToUpdate = existingExs[j];
+                        exToUpdate.Name = incomingEx.Name;
+                        exToUpdate.Sets = incomingEx.Sets;
+                        exToUpdate.Reps = incomingEx.Reps;
+                        exToUpdate.Notes = incomingEx.Notes;
+                        exToUpdate.MediaUrl = incomingEx.MediaUrl;
+                        exToUpdate.MediaType = ParseMediaType(incomingEx.MediaType);
+                        exToUpdate.SortOrder = incomingEx.SortOrder > 0 ? incomingEx.SortOrder : j;
+                    }
+                    else
+                    {
+                        dayToUpdate.Exercises.Add(new Exercise
+                        {
+                            Name = incomingEx.Name,
+                            Sets = incomingEx.Sets,
+                            Reps = incomingEx.Reps,
+                            Notes = incomingEx.Notes,
+                            MediaUrl = incomingEx.MediaUrl,
+                            MediaType = ParseMediaType(incomingEx.MediaType),
+                            SortOrder = incomingEx.SortOrder > 0 ? incomingEx.SortOrder : j
+                        });
+                    }
+                }
+
+                // 4. Update meals for this day
+                var existingMeals = dayToUpdate.Meals.OrderBy(m => m.SortOrder).ToList();
+                var incomingMeals = incomingDay.Meals.OrderBy(m => m.SortOrder).ToList();
+
+                // Delete old meals
+                for (int j = incomingMeals.Count; j < existingMeals.Count; j++)
+                {
+                    dayToUpdate.Meals.Remove(existingMeals[j]);
+                }
+
+                // Add or update meals
+                for (int j = 0; j < incomingMeals.Count; j++)
+                {
+                    var incomingMeal = incomingMeals[j];
+                    if (j < existingMeals.Count)
+                    {
+                        var mealToUpdate = existingMeals[j];
+                        mealToUpdate.Name = incomingMeal.Name;
+                        mealToUpdate.Macros = incomingMeal.Macros;
+                        mealToUpdate.Time = incomingMeal.Time;
+                        mealToUpdate.PhotoUrl = incomingMeal.PhotoUrl;
+                        mealToUpdate.Ingredients = incomingMeal.Ingredients;
+                        mealToUpdate.SortOrder = incomingMeal.SortOrder > 0 ? incomingMeal.SortOrder : j;
+                    }
+                    else
+                    {
+                        dayToUpdate.Meals.Add(new Meal
+                        {
+                            Name = incomingMeal.Name,
+                            Macros = incomingMeal.Macros,
+                            Time = incomingMeal.Time,
+                            PhotoUrl = incomingMeal.PhotoUrl,
+                            Ingredients = incomingMeal.Ingredients,
+                            SortOrder = incomingMeal.SortOrder > 0 ? incomingMeal.SortOrder : j
+                        });
+                    }
+                }
             }
 
             var updated = await _repo.UpdateAsync(existing);

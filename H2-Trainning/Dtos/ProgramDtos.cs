@@ -15,6 +15,7 @@ namespace H2_Trainning.Dtos
         public int SortOrder { get; set; }
         public bool? IsCompleted { get; set; }
         public string? ClientNotes { get; set; }
+        public double? Weight { get; set; }
     }
 
     public class CreateExerciseDto

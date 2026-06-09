@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("H2-Trainning")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Release")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+efeb9312d7bd8949e99f88ae2bc9e5aa73893e86")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+780147abe2555b4253d14e0b51489837fb64506e")]
 [assembly: System.Reflection.AssemblyProductAttribute("H2-Trainning")]
 [assembly: System.Reflection.AssemblyTitleAttribute("H2-Trainning")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

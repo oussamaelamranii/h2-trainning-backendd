@@ -93,7 +93,8 @@ namespace H2_Trainning.Services
                                 MediaType = e.MediaType?.ToString(),
                                 SortOrder = e.SortOrder,
                                 IsCompleted = log?.IsCompleted,
-                                ClientNotes = log?.ClientNotes
+                                ClientNotes = log?.ClientNotes,
+                                Weight = log?.Weight
                             };
                         }).ToList() ?? new(),
                         Meals = d.Meals?.Select(m => new MealDto
