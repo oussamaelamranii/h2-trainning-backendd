@@ -40,5 +40,21 @@ namespace H2_Trainning.Repositories
                 .Include(c => c.Client)
                 .FirstOrDefaultAsync(c => c.Id == checkIn.Id))!;
         }
+
+        public async Task<Dictionary<string, decimal?>> GetLatestWeightsForClientsAsync(List<string> clientIds)
+        {
+            if (clientIds == null || !clientIds.Any())
+                return new Dictionary<string, decimal?>();
+
+            var latestCheckIns = await _context.CheckIns
+                .Where(c => clientIds.Contains(c.ClientId))
+                .GroupBy(c => c.ClientId)
+                .Select(g => g.OrderByDescending(c => c.CreatedAt).FirstOrDefault())
+                .ToListAsync();
+
+            return latestCheckIns
+                .Where(c => c != null)
+                .ToDictionary(c => c!.ClientId, c => (decimal?)c!.Weight);
+        }
     }
 }

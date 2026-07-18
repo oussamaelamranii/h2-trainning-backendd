@@ -7,5 +7,6 @@ namespace H2_Trainning.Interfaces
         Task<List<CheckIn>> GetByClientIdAsync(string clientId);
         Task<CheckIn?> GetLatestByClientIdAsync(string clientId);
         Task<CheckIn> CreateAsync(CheckIn checkIn);
+        Task<Dictionary<string, decimal?>> GetLatestWeightsForClientsAsync(List<string> clientIds);
     }
 }

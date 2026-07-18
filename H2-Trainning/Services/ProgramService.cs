@@ -216,6 +216,50 @@ namespace H2_Trainning.Services
             return await _repo.DeleteAsync(id);
         }
 
+        public async Task<ProgramDto?> DuplicateAsync(int id, string coachId)
+        {
+            var existing = await _repo.GetByIdAsync(id);
+            if (existing == null || existing.CoachId != coachId) return null;
+
+            var copy = new H2_Trainning.Models.Program
+            {
+                Title = $"{existing.Title} (Copy)",
+                Description = existing.Description,
+                NutritionalBases = existing.NutritionalBases,
+                CoachId = coachId,
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow,
+                Days = existing.Days.Select(d => new Models.ProgramDay
+                {
+                    Name = d.Name,
+                    DayNumber = d.DayNumber,
+                    IsRestDay = d.IsRestDay,
+                    Exercises = d.Exercises.Select(e => new Models.Exercise
+                    {
+                        Name = e.Name,
+                        Sets = e.Sets,
+                        Reps = e.Reps,
+                        Notes = e.Notes,
+                        MediaUrl = e.MediaUrl,
+                        MediaType = e.MediaType,
+                        SortOrder = e.SortOrder
+                    }).ToList(),
+                    Meals = d.Meals.Select(m => new Models.Meal
+                    {
+                        Name = m.Name,
+                        Macros = m.Macros,
+                        Time = m.Time,
+                        PhotoUrl = m.PhotoUrl,
+                        Ingredients = m.Ingredients,
+                        SortOrder = m.SortOrder
+                    }).ToList()
+                }).ToList()
+            };
+
+            var created = await _repo.CreateAsync(copy);
+            return MapToDto(created);
+        }
+
         private static Models.MediaType? ParseMediaType(string? type)
         {
             if (string.IsNullOrEmpty(type)) return null;

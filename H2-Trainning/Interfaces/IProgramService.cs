@@ -10,5 +10,6 @@ namespace H2_Trainning.Interfaces
         Task<ProgramDto> CreateAsync(string coachId, CreateProgramDto dto);
         Task<ProgramDto?> UpdateAsync(int id, string coachId, UpdateProgramDto dto);
         Task<bool> DeleteAsync(int id, string coachId);
+        Task<ProgramDto?> DuplicateAsync(int id, string coachId);
     }
 }

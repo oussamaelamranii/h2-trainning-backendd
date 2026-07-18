@@ -22,23 +22,17 @@ namespace H2_Trainning.Services
         public async Task<List<UserDto>> GetClientsByCoachIdAsync(string coachId)
         {
             var clients = await _repo.GetClientsByCoachIdAsync(coachId);
-            var dtos = new List<UserDto>();
-            foreach (var client in clients)
-            {
-                dtos.Add(await MapToDtoWithWeightAsync(client));
-            }
-            return dtos;
+            var clientIds = clients.Select(c => c.Id).ToList();
+            var weightsMap = await _checkInRepo.GetLatestWeightsForClientsAsync(clientIds);
+            return MapToDtosWithWeight(clients, weightsMap);
         }
 
         public async Task<List<UserDto>> SearchClientsAsync(string coachId, string query)
         {
             var clients = await _repo.SearchClientsAsync(coachId, query);
-            var dtos = new List<UserDto>();
-            foreach (var client in clients)
-            {
-                dtos.Add(await MapToDtoWithWeightAsync(client));
-            }
-            return dtos;
+            var clientIds = clients.Select(c => c.Id).ToList();
+            var weightsMap = await _checkInRepo.GetLatestWeightsForClientsAsync(clientIds);
+            return MapToDtosWithWeight(clients, weightsMap);
         }
 
         public async Task<UserDto> CreateClientAsync(string coachId, CreateClientDto dto)
@@ -84,12 +78,9 @@ namespace H2_Trainning.Services
         public async Task<List<UserDto>> GetPendingClientsAsync()
         {
             var clients = await _repo.GetPendingClientsAsync();
-            var dtos = new List<UserDto>();
-            foreach (var client in clients)
-            {
-                dtos.Add(await MapToDtoWithWeightAsync(client));
-            }
-            return dtos;
+            var clientIds = clients.Select(c => c.Id).ToList();
+            var weightsMap = await _checkInRepo.GetLatestWeightsForClientsAsync(clientIds);
+            return MapToDtosWithWeight(clients, weightsMap);
         }
 
         public async Task<UserDto> ApproveClientAsync(string clientId, string coachId)
@@ -160,6 +151,28 @@ namespace H2_Trainning.Services
                 PhoneNumber = u.PhoneNumber,
                 LastWeight = latestCheckIn?.Weight
             };
+        }
+
+        private List<UserDto> MapToDtosWithWeight(List<AppUser> users, Dictionary<string, decimal?> weightsMap)
+        {
+            var dtos = new List<UserDto>();
+            foreach (var u in users)
+            {
+                weightsMap.TryGetValue(u.Id, out var weight);
+                dtos.Add(new UserDto
+                {
+                    Id = u.Id,
+                    FullName = u.FullName,
+                    Email = u.Email!,
+                    Role = u.Role.ToString(),
+                    Goal = u.Goal,
+                    IsApproved = u.IsApproved,
+                    PlainPassword = u.PlainPassword,
+                    PhoneNumber = u.PhoneNumber,
+                    LastWeight = weight
+                });
+            }
+            return dtos;
         }
     }
 }

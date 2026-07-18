@@ -16,10 +16,10 @@ namespace H2_Trainning.Repositories
         public async Task<List<H2_Trainning.Models.Program>> GetByCoachIdAsync(string coachId)
         {
             return await _context.Programs
-                .Include(p => p.Days.OrderBy(d => d.DayNumber))
-                    .ThenInclude(d => d.Exercises.OrderBy(e => e.SortOrder))
-                .Include(p => p.Days.OrderBy(d => d.DayNumber))
-                    .ThenInclude(d => d.Meals.OrderBy(m => m.SortOrder))
+                .Include(p => p.Days)
+                    .ThenInclude(d => d.Exercises)
+                .Include(p => p.Days)
+                    .ThenInclude(d => d.Meals)
                 .Where(p => p.CoachId == coachId)
                 .OrderByDescending(p => p.UpdatedAt)
                 .AsSplitQuery()
@@ -37,10 +37,10 @@ namespace H2_Trainning.Repositories
         public async Task<H2_Trainning.Models.Program?> GetByIdAsync(int id)
         {
             return await _context.Programs
-                .Include(p => p.Days.OrderBy(d => d.DayNumber))
-                    .ThenInclude(d => d.Exercises.OrderBy(e => e.SortOrder))
-                .Include(p => p.Days.OrderBy(d => d.DayNumber))
-                    .ThenInclude(d => d.Meals.OrderBy(m => m.SortOrder))
+                .Include(p => p.Days)
+                    .ThenInclude(d => d.Exercises)
+                .Include(p => p.Days)
+                    .ThenInclude(d => d.Meals)
                 .AsSplitQuery()
                 .FirstOrDefaultAsync(p => p.Id == id);
         }
@@ -54,7 +54,29 @@ namespace H2_Trainning.Repositories
 
         public async Task<H2_Trainning.Models.Program> UpdateAsync(H2_Trainning.Models.Program program)
         {
-            var existingExerciseIds = await _context.Exercises
+            // Find all days in DB for this program
+            var dbDayIds = await _context.ProgramDays
+                .Where(d => d.ProgramId == program.Id)
+                .Select(d => d.Id)
+                .ToListAsync();
+
+            var currentDayIds = program.Days
+                .Select(d => d.Id)
+                .Where(id => id > 0)
+                .ToList();
+
+            var deletedDayIds = dbDayIds.Except(currentDayIds).ToList();
+
+            if (deletedDayIds.Any())
+            {
+                var daysToRemove = await _context.ProgramDays
+                    .Where(d => deletedDayIds.Contains(d.Id))
+                    .ToListAsync();
+                _context.ProgramDays.RemoveRange(daysToRemove);
+            }
+
+            // Find all exercises in DB for this program's days
+            var dbExerciseIds = await _context.Exercises
                 .Where(e => e.ProgramDay.ProgramId == program.Id)
                 .Select(e => e.Id)
                 .ToListAsync();
@@ -65,7 +87,7 @@ namespace H2_Trainning.Repositories
                 .Where(id => id > 0)
                 .ToList();
 
-            var deletedExerciseIds = existingExerciseIds.Except(currentExerciseIds).ToList();
+            var deletedExerciseIds = dbExerciseIds.Except(currentExerciseIds).ToList();
 
             if (deletedExerciseIds.Any())
             {
@@ -84,6 +106,33 @@ namespace H2_Trainning.Repositories
                 {
                     _context.ExerciseLogs.RemoveRange(exerciseLogs);
                 }
+
+                var exercisesToRemove = await _context.Exercises
+                    .Where(e => deletedExerciseIds.Contains(e.Id))
+                    .ToListAsync();
+                _context.Exercises.RemoveRange(exercisesToRemove);
+            }
+
+            // Find all meals in DB for this program's days
+            var dbMealIds = await _context.Meals
+                .Where(m => m.ProgramDay.ProgramId == program.Id)
+                .Select(m => m.Id)
+                .ToListAsync();
+
+            var currentMealIds = program.Days
+                .SelectMany(d => d.Meals)
+                .Select(m => m.Id)
+                .Where(id => id > 0)
+                .ToList();
+
+            var deletedMealIds = dbMealIds.Except(currentMealIds).ToList();
+
+            if (deletedMealIds.Any())
+            {
+                var mealsToRemove = await _context.Meals
+                    .Where(m => deletedMealIds.Contains(m.Id))
+                    .ToListAsync();
+                _context.Meals.RemoveRange(mealsToRemove);
             }
 
             if (_context.Entry(program).State == EntityState.Detached)

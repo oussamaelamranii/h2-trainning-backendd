@@ -58,6 +58,14 @@ namespace H2_Trainning.Controllers
             return Ok(result);
         }
 
+        [HttpPost("{id}/duplicate")]
+        public async Task<IActionResult> Duplicate(int id)
+        {
+            var result = await _service.DuplicateAsync(id, GetUserId());
+            if (result == null) return NotFound();
+            return Ok(result);
+        }
+
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {
