@@ -1,5 +1,7 @@
 using H2_Trainning.Data;
+using H2_Trainning.Dtos;
 using H2_Trainning.Interfaces;
+using H2_Trainning.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace H2_Trainning.Repositories
@@ -22,15 +24,28 @@ namespace H2_Trainning.Repositories
                     .ThenInclude(d => d.Meals)
                 .Where(p => p.CoachId == coachId)
                 .OrderByDescending(p => p.UpdatedAt)
+                .AsNoTracking()
                 .AsSplitQuery()
                 .ToListAsync();
         }
 
-        public async Task<List<H2_Trainning.Models.Program>> GetSummariesByCoachIdAsync(string coachId)
+        public async Task<List<ProgramSummaryDto>> GetSummariesByCoachIdAsync(string coachId)
         {
             return await _context.Programs
                 .Where(p => p.CoachId == coachId)
                 .OrderByDescending(p => p.UpdatedAt)
+                .AsNoTracking()
+                .Select(p => new ProgramSummaryDto
+                {
+                    Id = p.Id,
+                    Title = p.Title,
+                    Description = p.Description,
+                    NutritionalBases = p.NutritionalBases,
+                    CoachId = p.CoachId,
+                    DayCount = p.Days.Count(),
+                    ExerciseCount = p.Days.SelectMany(d => d.Exercises).Count(),
+                    MealCount = p.Days.SelectMany(d => d.Meals).Count()
+                })
                 .ToListAsync();
         }
 
@@ -142,6 +157,46 @@ namespace H2_Trainning.Repositories
 
             await _context.SaveChangesAsync();
             return program;
+        }
+
+        public async Task<bool> UpdateExerciseMediaAsync(
+            int programId,
+            string coachId,
+            int exerciseId,
+            string dataUrl,
+            MediaType mediaType)
+        {
+            var exercise = await _context.Exercises
+                .FirstOrDefaultAsync(e =>
+                    e.Id == exerciseId &&
+                    e.ProgramDay.ProgramId == programId &&
+                    e.ProgramDay.Program.CoachId == coachId);
+
+            if (exercise == null) return false;
+
+            exercise.MediaUrl = dataUrl;
+            exercise.MediaType = mediaType;
+            await _context.SaveChangesAsync();
+            return true;
+        }
+
+        public async Task<bool> UpdateMealPhotoAsync(
+            int programId,
+            string coachId,
+            int mealId,
+            string dataUrl)
+        {
+            var meal = await _context.Meals
+                .FirstOrDefaultAsync(m =>
+                    m.Id == mealId &&
+                    m.ProgramDay.ProgramId == programId &&
+                    m.ProgramDay.Program.CoachId == coachId);
+
+            if (meal == null) return false;
+
+            meal.PhotoUrl = dataUrl;
+            await _context.SaveChangesAsync();
+            return true;
         }
 
         public async Task<bool> DeleteAsync(int id)

@@ -41,7 +41,9 @@ namespace H2_Trainning.Controllers
         [Authorize(Roles = "Coach")]
         public async Task<IActionResult> GetClientDashboardForCoach(string clientId)
         {
-            var dashboard = await _service.GetClientDashboardAsync(clientId);
+            // The coach view needs progress and check-ins, not the original
+            // base64 media blobs stored inside program templates.
+            var dashboard = await _service.GetClientDashboardAsync(clientId, includeMedia: false);
             if (dashboard?.CurrentProgram != null && dashboard.CurrentProgram.CoachId != GetUserId())
                 return Forbid();
             return Ok(dashboard);

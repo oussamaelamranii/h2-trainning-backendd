@@ -21,6 +21,7 @@ namespace H2_Trainning.Repositories
                 .Where(s => s.CoachId == coachId)
                 .OrderBy(s => s.Date)
                 .ThenBy(s => s.StartTime)
+                .AsNoTracking()
                 .ToListAsync();
         }
 
@@ -31,6 +32,7 @@ namespace H2_Trainning.Repositories
                 .Where(s => !s.IsBooked)
                 .OrderBy(s => s.Date)
                 .ThenBy(s => s.StartTime)
+                .AsNoTracking()
                 .ToListAsync();
         }
 

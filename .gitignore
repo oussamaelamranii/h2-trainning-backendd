@@ -1,0 +1,19 @@
+# Local IDE files and generated build outputs
+**/.vs/
+**/bin/
+**/obj/
+*.user
+*.suo
+*.log
+**/build*.txt
+**/backend_log.txt
+**/ef_*.txt
+**/err*.txt
+**/out*.txt
+
+# Local credentials and deployment profiles
+.env
+.env.*
+!.env.example
+**/Properties/PublishProfiles/
+**/appsettings.Local.json

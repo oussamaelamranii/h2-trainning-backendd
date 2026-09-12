@@ -35,7 +35,6 @@ namespace H2_Trainning.Controllers
         }
 
         [HttpGet("{id}")]
-        [AllowAnonymous]
         public async Task<IActionResult> GetById(int id)
         {
             var program = await _service.GetByIdAsync(id);
@@ -56,6 +55,38 @@ namespace H2_Trainning.Controllers
             var result = await _service.UpdateAsync(id, GetUserId(), dto);
             if (result == null) return NotFound();
             return Ok(result);
+        }
+
+        [HttpPut("{id}/media")]
+        public async Task<IActionResult> SaveMedia(int id, [FromBody] SaveProgramMediaDto dto)
+        {
+            var expectedPrefix = dto.Target == ProgramMediaTarget.Exercise
+                ? "data:"
+                : "data:image/";
+
+            if (!dto.DataUrl.StartsWith(expectedPrefix, StringComparison.OrdinalIgnoreCase) ||
+                !dto.DataUrl.Contains(";base64,", StringComparison.OrdinalIgnoreCase))
+            {
+                return BadRequest(new { message = "The selected media file is invalid." });
+            }
+
+            if (dto.Target == ProgramMediaTarget.Exercise &&
+                !dto.DataUrl.StartsWith("data:image/", StringComparison.OrdinalIgnoreCase) &&
+                !dto.DataUrl.StartsWith("data:video/", StringComparison.OrdinalIgnoreCase))
+            {
+                return BadRequest(new { message = "Exercise media must be an image or video." });
+            }
+
+            if (dto.Target == ProgramMediaTarget.Exercise)
+            {
+                dto.MediaType = dto.DataUrl.StartsWith("data:video/", StringComparison.OrdinalIgnoreCase)
+                    ? "Video"
+                    : "Image";
+            }
+
+            var saved = await _service.SaveMediaAsync(id, GetUserId(), dto);
+            if (!saved) return NotFound();
+            return NoContent();
         }
 
         [HttpPost("{id}/duplicate")]

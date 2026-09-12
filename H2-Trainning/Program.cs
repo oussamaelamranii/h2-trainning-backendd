@@ -7,6 +7,7 @@ using H2_Trainning.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.IdentityModel.Tokens;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -76,6 +77,7 @@ builder.Services.AddScoped<IClientService, ClientService>();
 builder.Services.AddScoped<IDashboardService, DashboardService>();
 builder.Services.AddScoped<IPostService, PostService>();
 builder.Services.AddScoped<ICheckInService, CheckInService>();
+builder.Services.AddScoped<IProgressAnalyticsService, ProgressAnalyticsService>();
 
 // ── Controllers + JSON ──
 builder.Services.AddControllers(options =>
@@ -86,6 +88,13 @@ builder.Services.AddControllers(options =>
     {
         options.JsonSerializerOptions.Converters.Add(new System.Text.Json.Serialization.JsonStringEnumConverter());
     });
+
+builder.Services.AddResponseCompression(options =>
+{
+    options.EnableForHttps = true;
+    options.Providers.Add<BrotliCompressionProvider>();
+    options.Providers.Add<GzipCompressionProvider>();
+});
 
 // ── Swagger ──
 builder.Services.AddEndpointsApiExplorer();
@@ -111,6 +120,8 @@ builder.Services.AddCors(options =>
 });
 
 var app = builder.Build();
+
+app.UseResponseCompression();
 
 // Configure the HTTP request pipeline.
 // Swagger UI khdam f ga3 l-environments

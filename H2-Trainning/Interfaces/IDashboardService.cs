@@ -5,7 +5,7 @@ namespace H2_Trainning.Interfaces
     public interface IDashboardService
     {
         Task<CoachDashboardDto> GetCoachDashboardAsync(string coachId);
-        Task<ClientDashboardDto> GetClientDashboardAsync(string clientId);
+        Task<ClientDashboardDto> GetClientDashboardAsync(string clientId, bool includeMedia = true);
         Task UpdateLastCheckedAsync(string clientId);
     }
 }

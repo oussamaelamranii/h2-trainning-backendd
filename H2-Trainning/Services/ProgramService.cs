@@ -19,17 +19,8 @@ namespace H2_Trainning.Services
             return programs.Select(MapToDto).ToList();
         }
 
-        public async Task<List<ProgramSummaryDto>> GetSummariesByCoachIdAsync(string coachId)
-        {
-            var programs = await _repo.GetSummariesByCoachIdAsync(coachId);
-            return programs.Select(p => new ProgramSummaryDto
-            {
-                Id = p.Id,
-                Title = p.Title,
-                Description = p.Description,
-                CoachId = p.CoachId
-            }).ToList();
-        }
+        public Task<List<ProgramSummaryDto>> GetSummariesByCoachIdAsync(string coachId) =>
+            _repo.GetSummariesByCoachIdAsync(coachId);
 
         public async Task<ProgramDto?> GetByIdAsync(int id)
         {
@@ -147,8 +138,13 @@ namespace H2_Trainning.Services
                         exToUpdate.Sets = incomingEx.Sets;
                         exToUpdate.Reps = incomingEx.Reps;
                         exToUpdate.Notes = incomingEx.Notes;
-                        exToUpdate.MediaUrl = incomingEx.MediaUrl;
-                        exToUpdate.MediaType = ParseMediaType(incomingEx.MediaType);
+                        // Media is optional on updates. The client omits
+                        // unchanged base64 blobs to stay below proxy limits.
+                        if (incomingEx.MediaUrl != null)
+                        {
+                            exToUpdate.MediaUrl = incomingEx.MediaUrl;
+                            exToUpdate.MediaType = ParseMediaType(incomingEx.MediaType);
+                        }
                         exToUpdate.SortOrder = incomingEx.SortOrder > 0 ? incomingEx.SortOrder : j;
                     }
                     else
@@ -186,7 +182,10 @@ namespace H2_Trainning.Services
                         mealToUpdate.Name = incomingMeal.Name;
                         mealToUpdate.Macros = incomingMeal.Macros;
                         mealToUpdate.Time = incomingMeal.Time;
-                        mealToUpdate.PhotoUrl = incomingMeal.PhotoUrl;
+                        if (incomingMeal.PhotoUrl != null)
+                        {
+                            mealToUpdate.PhotoUrl = incomingMeal.PhotoUrl;
+                        }
                         mealToUpdate.Ingredients = incomingMeal.Ingredients;
                         mealToUpdate.SortOrder = incomingMeal.SortOrder > 0 ? incomingMeal.SortOrder : j;
                     }
@@ -207,6 +206,31 @@ namespace H2_Trainning.Services
 
             var updated = await _repo.UpdateAsync(existing);
             return MapToDto(updated);
+        }
+
+        public Task<bool> SaveMediaAsync(int id, string coachId, SaveProgramMediaDto dto)
+        {
+            if (dto.Target == ProgramMediaTarget.Exercise)
+            {
+                var mediaType = ParseMediaType(dto.MediaType);
+                if (mediaType == null)
+                {
+                    return Task.FromResult(false);
+                }
+
+                return _repo.UpdateExerciseMediaAsync(
+                    id,
+                    coachId,
+                    dto.EntityId,
+                    dto.DataUrl,
+                    mediaType.Value);
+            }
+
+            return _repo.UpdateMealPhotoAsync(
+                id,
+                coachId,
+                dto.EntityId,
+                dto.DataUrl);
         }
 
         public async Task<bool> DeleteAsync(int id, string coachId)

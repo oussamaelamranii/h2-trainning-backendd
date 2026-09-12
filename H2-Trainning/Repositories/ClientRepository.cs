@@ -20,6 +20,7 @@ namespace H2_Trainning.Repositories
             return await _context.Users
                 .Where(u => u.Role == Role.Client && u.CoachId == coachId && u.IsApproved)
                 .OrderBy(u => u.FullName)
+                .AsNoTracking()
                 .ToListAsync();
         }
 
@@ -31,6 +32,7 @@ namespace H2_Trainning.Repositories
                          && u.IsApproved
                          && u.FullName.Contains(query))
                 .OrderBy(u => u.FullName)
+                .AsNoTracking()
                 .ToListAsync();
         }
 
@@ -77,6 +79,7 @@ namespace H2_Trainning.Repositories
             return await _context.Users
                 .Where(u => u.Role == Role.Client && !u.IsApproved)
                 .OrderBy(u => u.FullName)
+                .AsNoTracking()
                 .ToListAsync();
         }
 

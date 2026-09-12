@@ -107,7 +107,11 @@ namespace H2_Trainning.Dtos
         public int Id { get; set; }
         public string Title { get; set; } = string.Empty;
         public string? Description { get; set; }
+        public string? NutritionalBases { get; set; }
         public string CoachId { get; set; } = string.Empty;
+        public int DayCount { get; set; }
+        public int ExerciseCount { get; set; }
+        public int MealCount { get; set; }
     }
 
     public class CreateProgramDto
@@ -136,5 +140,28 @@ namespace H2_Trainning.Dtos
         public string? NutritionalBases { get; set; }
 
         public List<CreateProgramDayDto> Days { get; set; } = new();
+    }
+
+    public enum ProgramMediaTarget
+    {
+        Exercise,
+        Meal
+    }
+
+    public class SaveProgramMediaDto
+    {
+        [Required]
+        public ProgramMediaTarget Target { get; set; }
+
+        [Range(1, int.MaxValue)]
+        public int EntityId { get; set; }
+
+        // A 1.5 MiB file becomes roughly 2 MiB after base64 encoding.
+        // Keeping each upload below this limit avoids proxy request-size failures.
+        [Required, MaxLength(2_200_000)]
+        public string DataUrl { get; set; } = string.Empty;
+
+        [MaxLength(20)]
+        public string? MediaType { get; set; }
     }
 }

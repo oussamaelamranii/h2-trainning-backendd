@@ -22,6 +22,7 @@ namespace H2_Trainning.Repositories
                 .Include(r => r.Slot)
                 .Where(r => r.ClientId == clientId)
                 .OrderByDescending(r => r.CreatedAt)
+                .AsNoTracking()
                 .ToListAsync();
         }
 
@@ -33,6 +34,7 @@ namespace H2_Trainning.Repositories
                 .Include(r => r.Slot)
                 .Where(r => r.CoachId == coachId)
                 .OrderByDescending(r => r.CreatedAt)
+                .AsNoTracking()
                 .ToListAsync();
         }
 

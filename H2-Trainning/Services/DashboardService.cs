@@ -43,7 +43,7 @@ namespace H2_Trainning.Services
             };
         }
 
-        public async Task<ClientDashboardDto> GetClientDashboardAsync(string clientId)
+        public async Task<ClientDashboardDto> GetClientDashboardAsync(string clientId, bool includeMedia = true)
         {
             // Fetch only the latest assignment instead of all assignments
             var latest = await _assignmentRepo.GetLatestByClientIdAsync(clientId);
@@ -89,8 +89,8 @@ namespace H2_Trainning.Services
                                 Sets = e.Sets,
                                 Reps = e.Reps,
                                 Notes = e.Notes,
-                                MediaUrl = e.MediaUrl,
-                                MediaType = e.MediaType?.ToString(),
+                                 MediaUrl = includeMedia ? e.MediaUrl : null,
+                                 MediaType = includeMedia ? e.MediaType?.ToString() : null,
                                 SortOrder = e.SortOrder,
                                 IsCompleted = log?.IsCompleted,
                                 ClientNotes = log?.ClientNotes,
@@ -103,7 +103,7 @@ namespace H2_Trainning.Services
                             Name = m.Name,
                             Macros = m.Macros,
                             Time = m.Time,
-                            PhotoUrl = m.PhotoUrl,
+                             PhotoUrl = includeMedia ? m.PhotoUrl : null,
                             Ingredients = m.Ingredients,
                             SortOrder = m.SortOrder
                         }).ToList() ?? new()

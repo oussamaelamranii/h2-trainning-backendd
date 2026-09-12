@@ -20,6 +20,7 @@ namespace H2_Trainning.Repositories
                 .Include(c => c.Client)
                 .Where(c => c.ClientId == clientId)
                 .OrderByDescending(c => c.CreatedAt)
+                .AsNoTracking()
                 .ToListAsync();
         }
 
@@ -29,6 +30,7 @@ namespace H2_Trainning.Repositories
                 .Include(c => c.Client)
                 .Where(c => c.ClientId == clientId)
                 .OrderByDescending(c => c.CreatedAt)
+                .AsNoTracking()
                 .FirstOrDefaultAsync();
         }
 
@@ -48,6 +50,7 @@ namespace H2_Trainning.Repositories
 
             var latestCheckIns = await _context.CheckIns
                 .Where(c => clientIds.Contains(c.ClientId))
+                .AsNoTracking()
                 .GroupBy(c => c.ClientId)
                 .Select(g => g.OrderByDescending(c => c.CreatedAt).FirstOrDefault())
                 .ToListAsync();

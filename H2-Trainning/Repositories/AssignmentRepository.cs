@@ -21,6 +21,7 @@ namespace H2_Trainning.Repositories
                 .Include(a => a.Program)
                 .Where(a => a.Program.CoachId == coachId)
                 .OrderByDescending(a => a.AssignedDate)
+                .AsNoTracking()
                 .ToListAsync();
         }
 
@@ -32,6 +33,7 @@ namespace H2_Trainning.Repositories
                 .Where(a => a.Program.CoachId == coachId)
                 .OrderByDescending(a => a.AssignedDate)
                 .Take(count)
+                .AsNoTracking()
                 .ToListAsync();
         }
 
@@ -42,6 +44,7 @@ namespace H2_Trainning.Repositories
                 .Include(a => a.Program)
                 .Where(a => a.ClientId == clientId)
                 .OrderByDescending(a => a.AssignedDate)
+                .AsNoTracking()
                 .ToListAsync();
         }
 

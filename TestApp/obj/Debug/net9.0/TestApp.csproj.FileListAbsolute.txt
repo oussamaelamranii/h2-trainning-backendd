@@ -1,5 +1,0 @@
-C:\Users\oelam\OneDrive\Desktop\H2-Trainning\H2-Trainning-Backend\TestApp\obj\Debug\net9.0\TestApp.GeneratedMSBuildEditorConfig.editorconfig
-C:\Users\oelam\OneDrive\Desktop\H2-Trainning\H2-Trainning-Backend\TestApp\obj\Debug\net9.0\TestApp.AssemblyInfoInputs.cache
-C:\Users\oelam\OneDrive\Desktop\H2-Trainning\H2-Trainning-Backend\TestApp\obj\Debug\net9.0\TestApp.AssemblyInfo.cs
-C:\Users\oelam\OneDrive\Desktop\H2-Trainning\H2-Trainning-Backend\TestApp\obj\Debug\net9.0\TestApp.csproj.CoreCompileInputs.cache
-C:\Users\oelam\OneDrive\Desktop\H2-Trainning\H2-Trainning-Backend\TestApp\obj\Debug\net9.0\TestApp.sourcelink.json
