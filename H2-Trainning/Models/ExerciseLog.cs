@@ -23,5 +23,7 @@ namespace H2_Trainning.Models
         public string? ClientNotes { get; set; }
 
         public double? Weight { get; set; }
+
+        public DateTime LastActivityAt { get; set; } = DateTime.UtcNow;
     }
 }

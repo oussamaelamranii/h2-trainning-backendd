@@ -67,7 +67,8 @@ namespace H2_Trainning.Services
                     ExerciseId = exerciseId,
                     IsCompleted = dto.IsCompleted,
                     ClientNotes = dto.ClientNotes,
-                    Weight = dto.Weight
+                    Weight = dto.Weight,
+                    LastActivityAt = DateTime.UtcNow
                 };
                 await _repo.AddExerciseLogAsync(log);
             }
@@ -76,6 +77,7 @@ namespace H2_Trainning.Services
                 log.IsCompleted = dto.IsCompleted;
                 log.ClientNotes = dto.ClientNotes;
                 log.Weight = dto.Weight;
+                log.LastActivityAt = DateTime.UtcNow;
                 await _repo.UpdateExerciseLogAsync(log);
             }
 

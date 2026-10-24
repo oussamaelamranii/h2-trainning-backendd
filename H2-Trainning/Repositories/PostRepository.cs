@@ -65,6 +65,7 @@ namespace H2_Trainning.Repositories
             var post = await _context.Posts.FindAsync(id);
             if (post == null) return false;
 
+            _context.PostReads.RemoveRange(_context.PostReads.Where(r => r.PostId == id));
             _context.Posts.Remove(post);
             await _context.SaveChangesAsync();
             return true;

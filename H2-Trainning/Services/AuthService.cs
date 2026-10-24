@@ -36,7 +36,9 @@ namespace H2_Trainning.Services
                 Goal = dto.Goal,
                 IsApproved = true, // Direct registration is always approved
                 PlainPassword = dto.Password,
-                PhoneNumber = dto.PhoneNumber
+                PhoneNumber = dto.PhoneNumber,
+                Age = dto.Age,
+                HeightCm = dto.HeightCm
             };
 
             var result = await _userManager.CreateAsync(user, dto.Password);
@@ -70,7 +72,9 @@ namespace H2_Trainning.Services
                 Goal = dto.Goal,
                 IsApproved = false, // Pending coach approval
                 PlainPassword = dto.Password,
-                PhoneNumber = dto.PhoneNumber
+                PhoneNumber = dto.PhoneNumber,
+                Age = dto.Age,
+                HeightCm = dto.HeightCm
             };
 
             var result = await _userManager.CreateAsync(user, dto.Password);
@@ -118,7 +122,14 @@ namespace H2_Trainning.Services
             Goal = user.Goal,
             IsApproved = user.IsApproved,
             PlainPassword = user.PlainPassword,
-            PhoneNumber = user.PhoneNumber
+            PhoneNumber = user.PhoneNumber,
+            Age = user.Age,
+            HeightCm = user.HeightCm,
+            WaistCm = user.WaistCm,
+            ArmCm = user.ArmCm,
+            ThighCm = user.ThighCm,
+            ChestCm = user.ChestCm,
+            MaxHeartRate = user.Age.HasValue ? 220 - user.Age.Value : null
         };
     }
 }

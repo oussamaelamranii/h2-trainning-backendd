@@ -19,6 +19,18 @@ namespace H2_Trainning.Models
         public Role Role { get; set; }       // enum: Coach, Client
         [MaxLength(200)]
         public string? Goal { get; set; }    // clients only
+        [Range(10, 120)]
+        public int? Age { get; set; }
+        [Range(100, 250)]
+        public decimal? HeightCm { get; set; }
+        [Range(20, 300)]
+        public decimal? WaistCm { get; set; }
+        [Range(10, 150)]
+        public decimal? ArmCm { get; set; }
+        [Range(20, 200)]
+        public decimal? ThighCm { get; set; }
+        [Range(30, 300)]
+        public decimal? ChestCm { get; set; }
         public bool IsApproved { get; set; } = true; // false for pending client signups
         [MaxLength(200)]
         public string? PlainPassword { get; set; } // stored so coach can view client credentials

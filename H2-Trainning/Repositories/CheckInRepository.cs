@@ -49,15 +49,22 @@ namespace H2_Trainning.Repositories
                 return new Dictionary<string, decimal?>();
 
             var latestCheckIns = await _context.CheckIns
-                .Where(c => clientIds.Contains(c.ClientId))
+                .Where(c => clientIds.Contains(c.ClientId) && c.Weight.HasValue)
                 .AsNoTracking()
                 .GroupBy(c => c.ClientId)
                 .Select(g => g.OrderByDescending(c => c.CreatedAt).FirstOrDefault())
                 .ToListAsync();
 
-            return latestCheckIns
-                .Where(c => c != null)
-                .ToDictionary(c => c!.ClientId, c => (decimal?)c!.Weight);
+            var coachWeights = await _context.BodyWeightEntries.AsNoTracking()
+                .Where(w => clientIds.Contains(w.ClientId))
+                .GroupBy(w => w.ClientId)
+                .Select(g => g.OrderByDescending(w => w.CreatedAt).First())
+                .ToListAsync();
+            return latestCheckIns.Where(c => c != null)
+                .Select(c => new { c!.ClientId, Weight = c.Weight, c.CreatedAt })
+                .Concat(coachWeights.Select(w => new { w.ClientId, Weight = (decimal?)w.WeightKg, w.CreatedAt }))
+                .GroupBy(w => w.ClientId)
+                .ToDictionary(g => g.Key, g => g.OrderByDescending(w => w.CreatedAt).First().Weight);
         }
     }
 }

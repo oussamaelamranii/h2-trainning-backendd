@@ -21,6 +21,12 @@ namespace H2_Trainning.Dtos
         public string? Goal { get; set; }
 
         public string? PhoneNumber { get; set; }
+
+        [Range(10, 120)]
+        public int? Age { get; set; }
+
+        [Range(100, 250)]
+        public decimal? HeightCm { get; set; }
     }
 
     // ── Login ──
@@ -49,6 +55,12 @@ namespace H2_Trainning.Dtos
         public string? Goal { get; set; }
 
         public string? PhoneNumber { get; set; }
+
+        [Range(10, 120)]
+        public int? Age { get; set; }
+
+        [Range(100, 250)]
+        public decimal? HeightCm { get; set; }
     }
 
     // ── Auth Response ──

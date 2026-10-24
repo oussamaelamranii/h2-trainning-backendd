@@ -21,10 +21,26 @@ namespace H2_Trainning.Data
         public DbSet<PostLike> PostLikes { get; set; }
         public DbSet<PostComment> PostComments { get; set; }
         public DbSet<WeightHistoryLog> WeightHistoryLogs { get; set; }
+        public DbSet<CoachMessage> CoachMessages { get; set; }
+        public DbSet<PostRead> PostReads { get; set; }
+        public DbSet<BodyWeightEntry> BodyWeightEntries { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
+
+            builder.Entity<CoachMessage>().HasOne(m => m.Coach).WithMany()
+                .HasForeignKey(m => m.CoachId).OnDelete(DeleteBehavior.NoAction);
+            builder.Entity<CoachMessage>().HasOne(m => m.Client).WithMany()
+                .HasForeignKey(m => m.ClientId).OnDelete(DeleteBehavior.Cascade);
+            builder.Entity<CoachMessage>().HasIndex(m => new { m.ClientId, m.CreatedAt });
+            builder.Entity<PostRead>().HasKey(r => new { r.ClientId, r.PostId });
+            builder.Entity<PostRead>().HasOne(r => r.Client).WithMany()
+                .HasForeignKey(r => r.ClientId).OnDelete(DeleteBehavior.Cascade);
+            builder.Entity<PostRead>().HasOne(r => r.Post).WithMany()
+                .HasForeignKey(r => r.PostId).OnDelete(DeleteBehavior.NoAction);
+            builder.Entity<BodyWeightEntry>().Property(w => w.WeightKg).HasPrecision(18, 2);
+            builder.Entity<BodyWeightEntry>().HasIndex(w => new { w.ClientId, w.CreatedAt });
 
             // 1. Configuration dial les Reservations (Cascade Restrict)
             builder.Entity<Reservation>()
@@ -63,6 +79,12 @@ namespace H2_Trainning.Data
             builder.Entity<AppUser>().Property(u => u.Role).HasConversion<string>();
             builder.Entity<Assignment>().Property(a => a.Status).HasConversion<string>(); // <-- Zid hadi darouri
             builder.Entity<Reservation>().Property(r => r.Status).HasConversion<string>();
+            builder.Entity<AppUser>().Property(u => u.HeightCm).HasPrecision(6, 2);
+            builder.Entity<AppUser>().Property(u => u.WaistCm).HasPrecision(6, 2);
+            builder.Entity<AppUser>().Property(u => u.ArmCm).HasPrecision(6, 2);
+            builder.Entity<AppUser>().Property(u => u.ThighCm).HasPrecision(6, 2);
+            builder.Entity<AppUser>().Property(u => u.ChestCm).HasPrecision(6, 2);
+            builder.Entity<CheckIn>().Property(c => c.Weight).HasPrecision(18, 2);
 
             // 4. Performance indexes for frequently queried foreign keys
             builder.Entity<Assignment>().HasIndex(a => a.ClientId);

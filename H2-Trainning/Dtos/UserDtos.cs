@@ -13,6 +13,14 @@ namespace H2_Trainning.Dtos
         public string? PlainPassword { get; set; }
         public string? PhoneNumber { get; set; }
         public decimal? LastWeight { get; set; }
+        public int? Age { get; set; }
+        public decimal? HeightCm { get; set; }
+        public decimal? WaistCm { get; set; }
+        public decimal? ArmCm { get; set; }
+        public decimal? ThighCm { get; set; }
+        public decimal? ChestCm { get; set; }
+        public decimal? Bmi { get; set; }
+        public int? MaxHeartRate { get; set; }
     }
 
     public class CreateClientDto
@@ -30,6 +38,12 @@ namespace H2_Trainning.Dtos
         public string Password { get; set; } = string.Empty;
 
         public string? PhoneNumber { get; set; }
+
+        [Range(10, 120)]
+        public int? Age { get; set; }
+
+        [Range(100, 250)]
+        public decimal? HeightCm { get; set; }
     }
 
     public class ResetPasswordDto

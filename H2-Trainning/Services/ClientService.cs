@@ -51,7 +51,9 @@ namespace H2_Trainning.Services
                 CoachId = coachId,
                 IsApproved = true, // Coach-created clients are auto-approved
                 PlainPassword = dto.Password,
-                PhoneNumber = dto.PhoneNumber
+                PhoneNumber = dto.PhoneNumber,
+                Age = dto.Age,
+                HeightCm = dto.HeightCm
             };
 
             var result = await _userManager.CreateAsync(client, dto.Password);
@@ -138,7 +140,8 @@ namespace H2_Trainning.Services
 
         private async Task<UserDto> MapToDtoWithWeightAsync(AppUser u)
         {
-            var latestCheckIn = await _checkInRepo.GetLatestByClientIdAsync(u.Id);
+            var weights = await _checkInRepo.GetLatestWeightsForClientsAsync(new List<string> { u.Id });
+            var weight = weights.GetValueOrDefault(u.Id);
             return new UserDto
             {
                 Id = u.Id,
@@ -149,7 +152,15 @@ namespace H2_Trainning.Services
                 IsApproved = u.IsApproved,
                 PlainPassword = u.PlainPassword,
                 PhoneNumber = u.PhoneNumber,
-                LastWeight = latestCheckIn?.Weight
+                LastWeight = weight,
+                Age = u.Age,
+                HeightCm = u.HeightCm,
+                WaistCm = u.WaistCm,
+                ArmCm = u.ArmCm,
+                ThighCm = u.ThighCm,
+                ChestCm = u.ChestCm,
+                Bmi = CalculateBmi(weight, u.HeightCm),
+                MaxHeartRate = u.Age.HasValue ? 220 - u.Age.Value : null
             };
         }
 
@@ -169,10 +180,25 @@ namespace H2_Trainning.Services
                     IsApproved = u.IsApproved,
                     PlainPassword = u.PlainPassword,
                     PhoneNumber = u.PhoneNumber,
-                    LastWeight = weight
+                    LastWeight = weight,
+                    Age = u.Age,
+                    HeightCm = u.HeightCm,
+                    WaistCm = u.WaistCm,
+                    ArmCm = u.ArmCm,
+                    ThighCm = u.ThighCm,
+                    ChestCm = u.ChestCm,
+                    Bmi = CalculateBmi(weight, u.HeightCm),
+                    MaxHeartRate = u.Age.HasValue ? 220 - u.Age.Value : null
                 });
             }
             return dtos;
+        }
+
+        private static decimal? CalculateBmi(decimal? weightKg, decimal? heightCm)
+        {
+            if (!weightKg.HasValue || !heightCm.HasValue || heightCm.Value <= 0) return null;
+            var heightM = heightCm.Value / 100m;
+            return Math.Round(weightKg.Value / (heightM * heightM), 1);
         }
     }
 }

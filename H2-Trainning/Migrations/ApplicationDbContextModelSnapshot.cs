@@ -30,6 +30,17 @@ namespace H2_Trainning.Migrations
                     b.Property<int>("AccessFailedCount")
                         .HasColumnType("int");
 
+                    b.Property<int?>("Age")
+                        .HasColumnType("int");
+
+                    b.Property<decimal?>("ArmCm")
+                        .HasPrecision(6, 2)
+                        .HasColumnType("decimal(6,2)");
+
+                    b.Property<decimal?>("ChestCm")
+                        .HasPrecision(6, 2)
+                        .HasColumnType("decimal(6,2)");
+
                     b.Property<string>("CoachId")
                         .HasColumnType("nvarchar(450)");
 
@@ -52,6 +63,10 @@ namespace H2_Trainning.Migrations
                     b.Property<string>("Goal")
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
+
+                    b.Property<decimal?>("HeightCm")
+                        .HasPrecision(6, 2)
+                        .HasColumnType("decimal(6,2)");
 
                     b.Property<bool>("IsApproved")
                         .HasColumnType("bit");
@@ -90,12 +105,20 @@ namespace H2_Trainning.Migrations
                     b.Property<string>("SecurityStamp")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<decimal?>("ThighCm")
+                        .HasPrecision(6, 2)
+                        .HasColumnType("decimal(6,2)");
+
                     b.Property<bool>("TwoFactorEnabled")
                         .HasColumnType("bit");
 
                     b.Property<string>("UserName")
                         .HasMaxLength(256)
                         .HasColumnType("nvarchar(256)");
+
+                    b.Property<decimal?>("WaistCm")
+                        .HasPrecision(6, 2)
+                        .HasColumnType("decimal(6,2)");
 
                     b.HasKey("Id");
 
@@ -177,6 +200,32 @@ namespace H2_Trainning.Migrations
                     b.ToTable("AvailabilitySlots");
                 });
 
+            modelBuilder.Entity("H2_Trainning.Models.BodyWeightEntry", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("ClientId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<decimal>("WeightKg")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ClientId", "CreatedAt");
+
+                    b.ToTable("BodyWeightEntries");
+                });
+
             modelBuilder.Entity("H2_Trainning.Models.CheckIn", b =>
                 {
                     b.Property<int>("Id")
@@ -206,6 +255,7 @@ namespace H2_Trainning.Migrations
                         .HasColumnType("int");
 
                     b.Property<decimal?>("Weight")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.HasKey("Id");
@@ -213,6 +263,42 @@ namespace H2_Trainning.Migrations
                     b.HasIndex("ClientId");
 
                     b.ToTable("CheckIns");
+                });
+
+            modelBuilder.Entity("H2_Trainning.Models.CoachMessage", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("ClientId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("CoachId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("Content")
+                        .IsRequired()
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("ReadAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CoachId");
+
+                    b.HasIndex("ClientId", "CreatedAt");
+
+                    b.ToTable("CoachMessages");
                 });
 
             modelBuilder.Entity("H2_Trainning.Models.Exercise", b =>
@@ -279,6 +365,9 @@ namespace H2_Trainning.Migrations
 
                     b.Property<bool>("IsCompleted")
                         .HasColumnType("bit");
+
+                    b.Property<DateTime>("LastActivityAt")
+                        .HasColumnType("datetime2");
 
                     b.Property<double?>("Weight")
                         .HasColumnType("float");
@@ -436,6 +525,24 @@ namespace H2_Trainning.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("PostLikes");
+                });
+
+            modelBuilder.Entity("H2_Trainning.Models.PostRead", b =>
+                {
+                    b.Property<string>("ClientId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<int>("PostId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("ReadAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("ClientId", "PostId");
+
+                    b.HasIndex("PostId");
+
+                    b.ToTable("PostReads");
                 });
 
             modelBuilder.Entity("H2_Trainning.Models.Program", b =>
@@ -753,6 +860,17 @@ namespace H2_Trainning.Migrations
                     b.Navigation("Coach");
                 });
 
+            modelBuilder.Entity("H2_Trainning.Models.BodyWeightEntry", b =>
+                {
+                    b.HasOne("H2_Trainning.Models.AppUser", "Client")
+                        .WithMany()
+                        .HasForeignKey("ClientId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Client");
+                });
+
             modelBuilder.Entity("H2_Trainning.Models.CheckIn", b =>
                 {
                     b.HasOne("H2_Trainning.Models.AppUser", "Client")
@@ -762,6 +880,25 @@ namespace H2_Trainning.Migrations
                         .IsRequired();
 
                     b.Navigation("Client");
+                });
+
+            modelBuilder.Entity("H2_Trainning.Models.CoachMessage", b =>
+                {
+                    b.HasOne("H2_Trainning.Models.AppUser", "Client")
+                        .WithMany()
+                        .HasForeignKey("ClientId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("H2_Trainning.Models.AppUser", "Coach")
+                        .WithMany()
+                        .HasForeignKey("CoachId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.Navigation("Client");
+
+                    b.Navigation("Coach");
                 });
 
             modelBuilder.Entity("H2_Trainning.Models.Exercise", b =>
@@ -852,6 +989,25 @@ namespace H2_Trainning.Migrations
                     b.Navigation("Post");
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("H2_Trainning.Models.PostRead", b =>
+                {
+                    b.HasOne("H2_Trainning.Models.AppUser", "Client")
+                        .WithMany()
+                        .HasForeignKey("ClientId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("H2_Trainning.Models.Post", "Post")
+                        .WithMany()
+                        .HasForeignKey("PostId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.Navigation("Client");
+
+                    b.Navigation("Post");
                 });
 
             modelBuilder.Entity("H2_Trainning.Models.Program", b =>
