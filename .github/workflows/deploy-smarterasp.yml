@@ -1,0 +1,56 @@
+name: Verify and deploy backend
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'H2-Trainning/**'
+      - '.github/**'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'H2-Trainning/**'
+      - '.github/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: smarterasp-backend-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  backend:
+    runs-on: windows-2022
+    timeout-minutes: 20
+    defaults:
+      run:
+        shell: pwsh
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: '10.0.x'
+      - name: Restore API dependencies
+        run: dotnet restore ./H2-Trainning/H2-Trainning.csproj
+      - name: Build API
+        run: dotnet build ./H2-Trainning/H2-Trainning.csproj --configuration Release --no-restore
+      - name: Publish API
+        run: dotnet publish ./H2-Trainning/H2-Trainning.csproj --configuration Release --no-build --output "$env:RUNNER_TEMP/backend-publish"
+      - name: Deploy to site1
+        if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+        run: ./.github/scripts/Deploy-SmarterAsp.ps1 -SourcePath "$env:RUNNER_TEMP/backend-publish" -ExpectedSite h2coaching-001-site1 -Backend
+        env:
+          SMARTERASP_SITE_NAME: ${{ secrets.SMARTERASP_SITE_NAME }}
+          SMARTERASP_SERVER_URL: ${{ secrets.SMARTERASP_SERVER_URL }}
+          SMARTERASP_USERNAME: ${{ secrets.SMARTERASP_USERNAME }}
+          SMARTERASP_PASSWORD: ${{ secrets.SMARTERASP_PASSWORD }}
+      - name: Check public API
+        if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+        run: |
+          $response = Invoke-WebRequest -Uri 'https://api.h2-coaching.com/swagger/v1/swagger.json' -MaximumRetryCount 5 -RetryIntervalSec 5 -TimeoutSec 30
+          $schema = $response.Content | ConvertFrom-Json
+          if (-not $schema.paths.'/api/Auth/login') { throw 'The deployed API did not return its expected OpenAPI routes.' }
